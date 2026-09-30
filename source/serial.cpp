@@ -1,4 +1,4 @@
-#include "serial.h"
+#include "serial.hpp"
 #include <stdio.h>
 #include <stdbool.h>
 #include <3ds.h>
@@ -107,20 +107,20 @@ void setTWLNSerial() {
         FSFILE_Close(file);
         return;
     }
-    char *log = malloc(size);
+    char *log = new char[size + 1];
     ret = FSFILE_Read(file, NULL, 0, log, size);
 
     if (R_FAILED(ret)) {
         sprintf(twlnserial, "3. ret %08lx", ret);
         FSFILE_Close(file);
-        free(log);
+        delete[] log;
         return;
     }
     ret = FSFILE_Close(file);
     if (R_FAILED(ret)) {
         sprintf(twlnserial, "4. ret %08lx", ret);
         FSFILE_Close(file);
-        free(log);
+        delete[] log;
         return;
     }
 
@@ -129,11 +129,11 @@ void setTWLNSerial() {
         if (serialentry[i] == '\n') {
             serialentry[i] = '\0';
             strncpy(twlnserial, serialentry, i+1);
-            free(log);
+            delete[] log;
             return;
         }
     }
-    free(log);
+    delete[] log;
     twlnserial[0] = '\0';
     return;
 }

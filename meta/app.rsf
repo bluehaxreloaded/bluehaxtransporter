@@ -1,6 +1,6 @@
 BasicInfo:
-  Title                   : "SOAP-APP"
-  ProductCode             : "CTR-H-SOAP"
+  Title                   : "BHTR-APP"
+  ProductCode             : "CTR-H-BHTR"
   Logo                    : Homebrew # Nintendo / Licensed / Distributed / iQue / iQueForSystem
 
 RomFs:
@@ -8,7 +8,7 @@ RomFs:
 
 TitleInfo:
   Category                : Application
-  UniqueId                : 0x50AF5
+  UniqueId                : 0x50AF6
 
 Option:
   UseOnSD                 : true # true if App is to be installed to SD

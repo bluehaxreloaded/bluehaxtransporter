@@ -31,9 +31,9 @@ include $(DEVKITARM)/3ds_rules
 #     - icon.png
 #     - <libctru folder>/default_icon.png
 #---------------------------------------------------------------------------------
-APP_TITLE       := essentialsubmit
-APP_DESCRIPTION := Nintendo Homebrew essential.exefs Submitter
-APP_AUTHOR      := Gruetzig
+APP_TITLE       := Bluehax Transporter
+APP_DESCRIPTION := Bluehax Transporter
+APP_AUTHOR      := Bluehax
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
 SOURCES		:=	source
