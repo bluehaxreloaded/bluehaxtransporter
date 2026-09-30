@@ -12,6 +12,7 @@
 static u32 *SOC_buffer = NULL;
 
 CURL *curl;
+CURLM *multi_handle;
 curl_mime *mime;
 curl_mimepart *part1;
 curl_mimepart *part2;
@@ -40,6 +41,7 @@ bool initSocket() {
 bool initcurl() {
     curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
+    multi_handle = curl_multi_init();
     return !(!(curl));
 }
 
@@ -47,10 +49,10 @@ void initform() {
     mime = curl_mime_init(curl);
 }
 
-void discordhandleentry(const char* handle) {
+void pairingcodeentry(const char* handle) {
     part1 = curl_mime_addpart(mime);
     curl_mime_data(part1, handle, CURL_ZERO_TERMINATED);
-    curl_mime_name(part1, "discordhandle");
+    curl_mime_name(part1, "pairingcode");
 }
 
 void essentialdataentry() {
@@ -78,14 +80,15 @@ void serialentry(const char* name, char* serial) {
     curl_mime_name(serialpart, name);
 }
 
-CURLcode submittourl(const char* url, std::string* response_string) {
+CURLM* submittourl(const char* url, std::string* response_string) {
     curl_easy_setopt(curl, CURLOPT_MIMEPOST, mime);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, 5000);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeFunction);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, response_string);
-    return curl_easy_perform(curl);
+    curl_multi_add_handle(multi_handle, curl);
+    return multi_handle;
 }
 
 long gethttpcode() {
@@ -95,7 +98,9 @@ long gethttpcode() {
 }
 
 void exiteverything() {
+    curl_multi_remove_handle(multi_handle, curl);
     curl_easy_cleanup(curl);
     curl_mime_free(mime);
+    curl_multi_cleanup(multi_handle);
     curl_global_cleanup();
 }

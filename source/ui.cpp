@@ -49,3 +49,20 @@ void drawText(float x, float y, float z, float scale, u32 color, u32 flags, cons
     C2D_TextBufDelete(buf);
     va_end(va_stuff);
 }
+
+void drawTextCenter(float x, float z, float scale, u32 color, u32 flags, const char* fmt, ...)
+{
+    float textWidth, textHeight;
+    va_list va_stuff;
+    va_start(va_stuff, fmt);
+    C2D_TextBuf buf=C2D_TextBufNew(4096);
+    C2D_Text text;
+    char sbuf[4096];
+    vsnprintf(sbuf, 4095, fmt, va_stuff);
+    C2D_TextParse(&text, buf, sbuf);
+    C2D_TextOptimize(&text);
+    C2D_TextGetDimensions(&text, scale, scale, &textWidth, &textHeight);
+    C2D_DrawText(&text, C2D_WithColor | flags, x, (SCREEN_HEIGHT / 2.0f) - (textHeight / 2.0f), z, scale, scale, color);
+    C2D_TextBufDelete(buf);
+    va_end(va_stuff);
+}

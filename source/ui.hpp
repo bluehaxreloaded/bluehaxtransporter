@@ -23,3 +23,4 @@ void exitUI();
 void initContext(DrawContext* ctx);
 void initColors(DrawContext* ctx);
 void drawText(float x, float y, float z, float scale, u32 color, u32 flags, const char* fmt, ...);
+void drawTextCenter(float x, float z, float scale, u32 color, u32 flags, const char* fmt, ...);
