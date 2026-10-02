@@ -75,6 +75,7 @@ int main(int argc, char** argv) {
     CURLM* multi_handle;
     int request_in_progress = 1;
     int msgs_left = 0;
+    bool touch_let_go = false;
 
     if (!initSocket()) {
         goto fail;
@@ -93,11 +94,12 @@ int main(int argc, char** argv) {
 
 
     sheet = C2D_SpriteSheetLoad("romfs:/gfx/sprites.t3x");
-    C2D_Sprite bhlogo, topstart, topbg, bottombg;
+    C2D_Sprite bhlogo, topstart, topbg, bottombg, infoicon;
     C2D_SpriteFromSheet(&bhlogo, sheet, 0);
     C2D_SpriteFromSheet(&topstart, sheet, 1);
     C2D_SpriteFromSheet(&topbg, sheet, 2);
     C2D_SpriteFromSheet(&bottombg, sheet, 3);
+    C2D_SpriteFromSheet(&infoicon, sheet, 4);
 
     C2D_SpriteSetPos(&bhlogo, 10, 10);
     C2D_SpriteSetScale(&bhlogo, 0.4, 0.4);
@@ -111,6 +113,9 @@ int main(int argc, char** argv) {
 
     C2D_SpriteSetPos(&bottombg, 0, 0);
     C2D_SpriteSetCenter(&bottombg, 0, 0);
+
+    C2D_SpriteSetPos(&infoicon, SCREEN_WIDTH_BOTTOM - 62, 0);
+    C2D_SpriteSetCenter(&infoicon, 0, 0);
 
     C3D_FrameRate(24);
 
@@ -130,19 +135,6 @@ int main(int argc, char** argv) {
         C2D_SceneBegin(ctx.bottom);
         C2D_DrawSprite(&bottombg);
         C2D_SceneBegin(ctx.top);
-        /*
-        drawText(115, 10, 0, 0.7, ctx.clrWhite, 0, "Bluehax Transporter");
-        drawText(115, 55, 0, 0.4, ctx.clrWhite, 0, "Credits to gruetzig for original essentialsubmit application");
-        C2D_DrawSprite(&bhlogo);
-        drawText(160,  80, 0, 0.4, ctx.clrWhite, 0, "SD essential.exefs serial:");
-        drawText(160,  90, 0, 0.4, ctx.clrWhite, 0, "NAND essential.exefs serial:");
-        drawText(160, 100, 0, 0.4, ctx.clrWhite, 0, "SecureInfo serial:");
-        drawText(160, 110, 0, 0.4, ctx.clrWhite, 0, "inspect.log serial:");
-        drawText(320,  80, 0, 0.4, ctx.clrWhite, 0, "%s", getSDEssentialSerial());
-        drawText(320,  90, 0, 0.4, ctx.clrWhite, 0, "%s", getNANDEssentialSerial());
-        drawText(320, 100, 0, 0.4, ctx.clrWhite, 0, "%s", getSecinfoSerial());
-        drawText(320, 110, 0, 0.4, ctx.clrWhite, 0, "%s", getTWLNSerial());
-        */
         
         switch(menustate) {
             case 0:
@@ -152,8 +144,9 @@ int main(int argc, char** argv) {
                     drawText(20, 190, 0, 0.5, ctx.clrWhite, 0, "Username set to match serial");
                 }
                 C2D_SceneBegin(ctx.bottom);
-                drawText(SCREEN_WIDTH_BOTTOM/2, SCREEN_HEIGHT/2+20, 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Press \uE000 to begin!");
-                drawText(SCREEN_WIDTH_BOTTOM/2, SCREEN_HEIGHT/2+50, 0, 0.4, ctx.clrWhite, C2D_AlignCenter, "Press START to return to the \uE073 HOME Menu.");
+                drawTextCenter(SCREEN_WIDTH_BOTTOM/2, 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Press \uE000 to begin!");
+                drawText(SCREEN_WIDTH_BOTTOM/2, 210, 0, 0.4, ctx.clrWhite, C2D_AlignCenter, "Press START to return to the \uE073 HOME Menu.");
+                C2D_DrawSprite(&infoicon);
                 break;
             case 1:
                 C2D_DrawSprite(&topbg);
@@ -166,7 +159,7 @@ int main(int argc, char** argv) {
                 C2D_DrawSprite(&topbg);
                 drawTextCenter(SCREEN_WIDTH_TOP/2, 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Submitting...");
                 C2D_SceneBegin(ctx.bottom);
-                drawText(SCREEN_WIDTH_BOTTOM/2 - 16, SCREEN_HEIGHT/2 - 16, 0, 1, ctx.clrWhite, 0, getLoadingFrame(frame_counter));
+                drawTextCenter(SCREEN_WIDTH_BOTTOM/2, 0, 1, ctx.clrWhite, C2D_AlignCenter, getLoadingFrame(frame_counter));
                 break;
             case 4:
                 
@@ -181,16 +174,45 @@ int main(int argc, char** argv) {
                     C2D_DrawSprite(&topbg);
                     drawTextCenter(SCREEN_WIDTH_TOP/2, 0, 0.5, ctx.clrWhite, C2D_AlignCenter, finaltext.c_str());
                     C2D_SceneBegin(ctx.bottom);
-                    drawText(SCREEN_WIDTH_BOTTOM/2, SCREEN_HEIGHT/2+20, 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Press \uE000 to power off.");
+                    drawTextCenter(SCREEN_WIDTH_BOTTOM/2, 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Press \uE000 to power off.");
                 }
+                break;
+            case 5:
+                C2D_DrawSprite(&topstart);
+                drawText(SCREEN_WIDTH_TOP/2, 200, 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Application Info");
+                C2D_SceneBegin(ctx.bottom);
+                drawTextCenter(SCREEN_WIDTH_BOTTOM/2, 0, 0.4, ctx.clrWhite, C2D_AlignCenter,
+                    "Created by the Bluehax team\n"
+                    "Original essentialsubmit application created by gruetzig\n"
+                    "SD essential.exefs serial: %s\n"
+                    "NAND essential.exefs serial: %s\n"
+                    "SecureInfo serial: %s\n"
+                    "inspect.log serial: %s\n",
+                    getSDEssentialSerial(),
+                    getNANDEssentialSerial(),
+                    getSecinfoSerial(),
+                    getTWLNSerial()
+                );
                 break;
 
         }
         C3D_FrameEnd(0);
+        if(!(kDown & KEY_TOUCH) && !touch_let_go) {
+            touch_let_go = true;
+        }
         switch(menustate) {
             case 4:
                 if (kDown & (KEY_START | KEY_A)) {
                     goto deinit;
+                }
+                break;
+            case 5:
+                if (kDown & KEY_START) {
+                    goto deinit;
+                }
+                if (touch_let_go && (kDown & (KEY_TOUCH | KEY_B))) {
+                    menustate = 0;
+                    touch_let_go = false;
                 }
                 break;
             case 0:
@@ -201,8 +223,16 @@ int main(int argc, char** argv) {
                     sprintf(pairingcode, getNANDEssentialSerial());
                     setpairingcodeviaserial = true;
                 }
-                 if (strlen(address) > 0 && (kDown & (KEY_TOUCH | KEY_A))) {
+                if (strlen(address) > 0 && (kDown & KEY_A)) {
                     menustate++;
+                }
+                if(touch_let_go && (kDown & KEY_TOUCH)) {
+                    if(touch.px >= (SCREEN_WIDTH_BOTTOM - 70) && touch.py <= 50) {
+                        touch_let_go = false;
+                        menustate = 5;
+                    } else if(strlen(address) > 0) {
+                        menustate++;
+                    }
                 }
                 if (kDown & KEY_START) {
                     goto deinit;
