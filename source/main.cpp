@@ -95,10 +95,11 @@ int main(int argc, char** argv) {
 
 
     sheet = C2D_SpriteSheetLoad("romfs:/gfx/sprites.t3x");
-    C2D_Sprite bottombg, infoicon;
+    C2D_Sprite bottombg, infoicon, infoclose;
     C2D_Image topbg, topdots, toplogo;
     C2D_SpriteFromSheet(&bottombg, sheet, 3);
     C2D_SpriteFromSheet(&infoicon, sheet, 4);
+    C2D_SpriteFromSheet(&infoclose, sheet, 5);
 
     topbg = C2D_SpriteSheetGetImage(sheet, 0);
     topdots = C2D_SpriteSheetGetImage(sheet, 1);
@@ -107,8 +108,11 @@ int main(int argc, char** argv) {
     C2D_SpriteSetPos(&bottombg, 0, 0);
     C2D_SpriteSetCenter(&bottombg, 0, 0);
 
-    C2D_SpriteSetPos(&infoicon, SCREEN_WIDTH_BOTTOM - 62, 0);
+    C2D_SpriteSetPos(&infoicon, SCREEN_WIDTH_BOTTOM - 85, 0);
     C2D_SpriteSetCenter(&infoicon, 0, 0);
+
+    C2D_SpriteSetPos(&infoclose, SCREEN_WIDTH_BOTTOM - 85, 0);
+    C2D_SpriteSetCenter(&infoclose, 0, 0);
 
     C3D_FrameRate(24);
 
@@ -133,56 +137,52 @@ int main(int argc, char** argv) {
         switch(menustate) {
             case 0:
                 C2D_SceneBegin(ctx.left);
-                C2D_DrawImageAt(topbg, -4*slider, 0, 0);
-                C2D_DrawImageAt(topdots, 0, 0, 0);
-                C2D_DrawImageAt(toplogo, 4*slider, 0, 0);
-                drawText(20+(4*slider), 190, 0, 0.5, ctx.clrWhite, 0, "Slider: %f", slider);
-                drawText(20+(4*slider), 210, 0, 0.5, ctx.clrWhite, 0, "Server address: %s", address);
+                C2D_DrawImageAt(topbg, -6*slider-10, 0, 0);
+                C2D_DrawImageAt(topdots, -3*slider-10, 0, 0);
+                C2D_DrawImageAt(toplogo, 3*slider, 0, 0);
                 if(setpaircodeviaserial) {
-                    drawText(20+(4*slider), 190, 0, 0.5, ctx.clrWhite, 0, "Username set to match serial");
+                    drawText(20, 190+(3*slider), 0, 0.5, ctx.clrWhite, 0, "Username set to match serial");
                 }
 
                 C2D_SceneBegin(ctx.right);
-                C2D_DrawImageAt(topbg, 4*slider, 0, 0);
-                C2D_DrawImageAt(topdots, 0, 0, 0);
-                C2D_DrawImageAt(toplogo, -4*slider, 0, 0);
-                drawText(20-(4*slider), 190, 0, 0.5, ctx.clrWhite, 0, "Slider: %f", slider);
-                drawText(20-(4*slider), 210, 0, 0.5, ctx.clrWhite, 0, "Server address: %s", address);
+                C2D_DrawImageAt(topbg, 6*slider-10, 0, 0);
+                C2D_DrawImageAt(topdots, 3*slider-10, 0, 0);
+                C2D_DrawImageAt(toplogo, -3*slider, 0, 0);
                 if(setpaircodeviaserial) {
-                    drawText(20-(4*slider), 190, 0, 0.5, ctx.clrWhite, 0, "Username set to match serial");
+                    drawText(20, 190-(3*slider), 0, 0.5, ctx.clrWhite, 0, "Username set to match serial");
                 }
 
                 C2D_SceneBegin(ctx.bottom);
                 drawTextCenter(SCREEN_WIDTH_BOTTOM/2, 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Press \uE000 to begin!");
-                drawText(SCREEN_WIDTH_BOTTOM/2, 210, 0, 0.4, ctx.clrWhite, C2D_AlignCenter, "Press START to return to the \uE073 HOME Menu.");
+                drawText(SCREEN_WIDTH_BOTTOM/2, 210, 0, 0.5, ctx.clrWhite, C2D_AlignCenter, "Press START to return to the \uE073 HOME Menu.");
                 C2D_DrawSprite(&infoicon);
                 break;
             case 1:
                 C2D_SceneBegin(ctx.left);
-                C2D_DrawImageAt(topbg, -4*slider, 0, 0);
-                C2D_DrawImageAt(topdots, 0, 0, 0);
+                C2D_DrawImageAt(topbg, -6*slider-10, 0, 0);
+                C2D_DrawImageAt(topdots, -3*slider-10, 0, 0);
                 if(strlen(paircode)==0) {
-                    drawTextCenter(SCREEN_WIDTH_TOP/2 + (4*slider), 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Please enter the Pair Code\nsent within the Discord server.");
+                    drawTextCenter(SCREEN_WIDTH_TOP/2 + (3*slider), 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Please enter the Pair Code\nsent within the Discord server.");
                 }
 
                 C2D_SceneBegin(ctx.right);
-                C2D_DrawImageAt(topbg, 4*slider, 0, 0);
-                C2D_DrawImageAt(topdots, 0, 0, 0);
+                C2D_DrawImageAt(topbg, 6*slider-10, 0, 0);
+                C2D_DrawImageAt(topdots, 3*slider-10, 0, 0);
                 if(strlen(paircode)==0) {
-                    drawTextCenter(SCREEN_WIDTH_TOP/2 - (4*slider), 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Please enter the Pair Code\nsent within the Discord server.");
+                    drawTextCenter(SCREEN_WIDTH_TOP/2 - (3*slider), 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Please enter the Pair Code\nsent within the Discord server.");
                 }
                 break;
             case 2:
             case 3:
                 C2D_SceneBegin(ctx.left);
-                C2D_DrawImageAt(topbg, -4*slider, 0, 0);
-                C2D_DrawImageAt(topdots, 0, 0, 0);
-                drawTextCenter(SCREEN_WIDTH_TOP/2 + (4*slider), 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Submitting...");
+                C2D_DrawImageAt(topbg, -6*slider-10, 0, 0);
+                C2D_DrawImageAt(topdots, -3*slider-10, 0, 0);
+                drawTextCenter(SCREEN_WIDTH_TOP/2 + (3*slider), 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Submitting...");
 
                 C2D_SceneBegin(ctx.right);
-                C2D_DrawImageAt(topbg, 4*slider, 0, 0);
-                C2D_DrawImageAt(topdots, 0, 0, 0);
-                drawTextCenter(SCREEN_WIDTH_TOP/2 - (4*slider), 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Submitting...");
+                C2D_DrawImageAt(topbg, 6*slider-10, 0, 0);
+                C2D_DrawImageAt(topdots, 3*slider-10, 0, 0);
+                drawTextCenter(SCREEN_WIDTH_TOP/2 - (3*slider), 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Submitting...");
 
                 C2D_SceneBegin(ctx.bottom);
                 drawTextCenter(SCREEN_WIDTH_BOTTOM/2, 0, 1, ctx.clrWhite, C2D_AlignCenter, getLoadingFrame(frame_counter));
@@ -198,14 +198,14 @@ int main(int argc, char** argv) {
                     continue;
                 } else {
                     C2D_SceneBegin(ctx.left);
-                    C2D_DrawImageAt(topbg, -4*slider, 0, 0);
-                    C2D_DrawImageAt(topdots, 0, 0, 0);
-                    drawTextCenter(SCREEN_WIDTH_TOP/2 + (4*slider), 0, 0.5, ctx.clrWhite, C2D_AlignCenter, finaltext.c_str());
+                    C2D_DrawImageAt(topbg, -6*slider-10, 0, 0);
+                    C2D_DrawImageAt(topdots, -3*slider-10, 0, 0);
+                    drawTextCenter(SCREEN_WIDTH_TOP/2 + (3*slider), 0, 0.5, ctx.clrWhite, C2D_AlignCenter, finaltext.c_str());
 
                     C2D_SceneBegin(ctx.right);
-                    C2D_DrawImageAt(topbg, 4*slider, 0, 0);
-                    C2D_DrawImageAt(topdots, 0, 0, 0);
-                    drawTextCenter(SCREEN_WIDTH_TOP/2 - (4*slider), 0, 0.5, ctx.clrWhite, C2D_AlignCenter, finaltext.c_str());
+                    C2D_DrawImageAt(topbg, 6*slider-10, 0, 0);
+                    C2D_DrawImageAt(topdots, 3*slider-10, 0, 0);
+                    drawTextCenter(SCREEN_WIDTH_TOP/2 - (3*slider), 0, 0.5, ctx.clrWhite, C2D_AlignCenter, finaltext.c_str());
 
                     C2D_SceneBegin(ctx.bottom);
                     drawTextCenter(SCREEN_WIDTH_BOTTOM/2, 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Press \uE000 to power off.");
@@ -213,19 +213,19 @@ int main(int argc, char** argv) {
                 break;
             case 5:
                 C2D_SceneBegin(ctx.left);
-                C2D_DrawImageAt(topbg, -4*slider, 0, 0);
-                C2D_DrawImageAt(topdots, 0, 0, 0);
-                C2D_DrawImageAt(toplogo, 4*slider, 0, 0);
-                drawText(SCREEN_WIDTH_TOP/2 + (4*slider), 200, 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Application Info");
+                C2D_DrawImageAt(topbg, -6*slider-10, 0, 0);
+                C2D_DrawImageAt(topdots, -3*slider-10, 0, 0);
+                C2D_DrawImageAt(toplogo, 3*slider, 0, 0);
+                drawText(SCREEN_WIDTH_TOP/2 + (3*slider), 200, 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Application Info");
                 
                 C2D_SceneBegin(ctx.right);
-                C2D_DrawImageAt(topbg, 4*slider, 0, 0);
-                C2D_DrawImageAt(topdots, 0, 0, 0);
-                C2D_DrawImageAt(toplogo, -4*slider, 0, 0);
-                drawText(SCREEN_WIDTH_TOP/2 - (4*slider), 200, 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Application Info");
+                C2D_DrawImageAt(topbg, 6*slider-10, 0, 0);
+                C2D_DrawImageAt(topdots, 3*slider-10, 0, 0);
+                C2D_DrawImageAt(toplogo, -3*slider, 0, 0);
+                drawText(SCREEN_WIDTH_TOP/2 - (3*slider), 200, 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Application Info");
 
                 C2D_SceneBegin(ctx.bottom);
-                drawTextCenter(SCREEN_WIDTH_BOTTOM/2, 0, 0.4, ctx.clrWhite, C2D_AlignCenter,
+                drawTextCenter(SCREEN_WIDTH_BOTTOM/2, 0, 0.45, ctx.clrWhite, C2D_AlignCenter,
                     "Created by the Bluehax team\n"
                     "Original essentialsubmit application created by gruetzig\n"
                     "SD essential.exefs serial: %s\n"
@@ -237,7 +237,8 @@ int main(int argc, char** argv) {
                     getSecinfoSerial(),
                     getTWLNSerial()
                 );\
-                drawText(SCREEN_WIDTH_BOTTOM/2, 210, 0, 0.4, ctx.clrWhite, C2D_AlignCenter, "Press \uE001 to return to the main menu.");
+                drawText(SCREEN_WIDTH_BOTTOM/2, 210, 0, 0.5, ctx.clrWhite, C2D_AlignCenter, "Press \uE001 to return to the main menu.");
+                C2D_DrawSprite(&infoclose);
                 break;
 
         }
@@ -293,8 +294,8 @@ int main(int argc, char** argv) {
             case 2:
                 if (getSDEssentialSerial()[0] == '\0') {
                     if (getNANDEssentialSerial()[0] == '\0') {
-                        finaltext = "essential.exefs not found";
-                        menustate++;
+                        finaltext = "essential.exefs could not be found on the console.\nPlease launch GodMode9 and allow it to create it.";
+                        menustate = 4;
                         break;
                     }
                     usenandessential = true;
