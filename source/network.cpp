@@ -49,7 +49,7 @@ void initform() {
     mime = curl_mime_init(curl);
 }
 
-void pairingcodeentry(const char* handle) {
+void paircodeentry(const char* handle) {
     part1 = curl_mime_addpart(mime);
     curl_mime_data(part1, handle, CURL_ZERO_TERMINATED);
     curl_mime_name(part1, "pairingcode");

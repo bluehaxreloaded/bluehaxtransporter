@@ -18,7 +18,7 @@ void enter(char* inout, size_t len, SwkbdType kbtype, bool pinInput) {
     swkbdInit(&swkbd, kbtype, 1, len);
     if(pinInput) {
         swkbdSetValidation(&swkbd, SWKBD_FIXEDLEN, 0, 0);
-        swkbdSetHintText(&swkbd, "Pairing PIN");
+        swkbdSetHintText(&swkbd, "Pair Code");
     }
     swkbdSetFeatures(&swkbd, SWKBD_ALLOW_HOME | SWKBD_ALLOW_POWER);
     swkbdSetInitialText(&swkbd, inout);
@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
     
 
     int result;
-    char pairingcode[33] = "";
+    char paircode[33] = "";
     char address[52] = "http://soap.gorgerush.net:9023/submit";
     initContext(&ctx);
     initColors(&ctx);
@@ -70,12 +70,13 @@ int main(int argc, char** argv) {
     std::string finaltext;
     std::string outputData;
     bool usenandessential = false;
-    bool setpairingcodeviaserial = false;
+    bool setpaircodeviaserial = false;
     int frame_counter = 0;
     CURLM* multi_handle;
     int request_in_progress = 1;
     int msgs_left = 0;
     bool touch_let_go = false;
+    float slider;
 
     if (!initSocket()) {
         goto fail;
@@ -94,22 +95,14 @@ int main(int argc, char** argv) {
 
 
     sheet = C2D_SpriteSheetLoad("romfs:/gfx/sprites.t3x");
-    C2D_Sprite bhlogo, topstart, topbg, bottombg, infoicon;
-    C2D_SpriteFromSheet(&bhlogo, sheet, 0);
-    C2D_SpriteFromSheet(&topstart, sheet, 1);
-    C2D_SpriteFromSheet(&topbg, sheet, 2);
+    C2D_Sprite bottombg, infoicon;
+    C2D_Image topbg, topdots, toplogo;
     C2D_SpriteFromSheet(&bottombg, sheet, 3);
     C2D_SpriteFromSheet(&infoicon, sheet, 4);
 
-    C2D_SpriteSetPos(&bhlogo, 10, 10);
-    C2D_SpriteSetScale(&bhlogo, 0.4, 0.4);
-    C2D_SpriteSetCenter(&bhlogo, 0.0, 0.0);
-
-    C2D_SpriteSetPos(&topstart, 0, 0);
-    C2D_SpriteSetCenter(&topstart, 0, 0);
-
-    C2D_SpriteSetPos(&topbg, 0, 0);
-    C2D_SpriteSetCenter(&topbg, 0, 0);
+    topbg = C2D_SpriteSheetGetImage(sheet, 0);
+    topdots = C2D_SpriteSheetGetImage(sheet, 1);
+    toplogo = C2D_SpriteSheetGetImage(sheet, 2);
 
     C2D_SpriteSetPos(&bottombg, 0, 0);
     C2D_SpriteSetCenter(&bottombg, 0, 0);
@@ -128,36 +121,69 @@ int main(int argc, char** argv) {
         touchPosition touch;
         hidTouchRead(&touch);
         u32 kDown = hidKeysHeld();
+        slider = osGet3DSliderState();
 
         C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-        C2D_TargetClear(ctx.top, ctx.clrBgDark);
+        C2D_TargetClear(ctx.left, ctx.clrBgDark);
+        C2D_TargetClear(ctx.right, ctx.clrBgDark);
         C2D_TargetClear(ctx.bottom, ctx.clrBgDark);
         C2D_SceneBegin(ctx.bottom);
         C2D_DrawSprite(&bottombg);
-        C2D_SceneBegin(ctx.top);
         
         switch(menustate) {
             case 0:
-                C2D_DrawSprite(&topstart);
-                drawText(20, 210, 0, 0.5, ctx.clrWhite, 0, "Server address: %s", address);
-                if(setpairingcodeviaserial) {
-                    drawText(20, 190, 0, 0.5, ctx.clrWhite, 0, "Username set to match serial");
+                C2D_SceneBegin(ctx.left);
+                C2D_DrawImageAt(topbg, -4*slider, 0, 0);
+                C2D_DrawImageAt(topdots, 0, 0, 0);
+                C2D_DrawImageAt(toplogo, 4*slider, 0, 0);
+                drawText(20+(4*slider), 190, 0, 0.5, ctx.clrWhite, 0, "Slider: %f", slider);
+                drawText(20+(4*slider), 210, 0, 0.5, ctx.clrWhite, 0, "Server address: %s", address);
+                if(setpaircodeviaserial) {
+                    drawText(20+(4*slider), 190, 0, 0.5, ctx.clrWhite, 0, "Username set to match serial");
                 }
+
+                C2D_SceneBegin(ctx.right);
+                C2D_DrawImageAt(topbg, 4*slider, 0, 0);
+                C2D_DrawImageAt(topdots, 0, 0, 0);
+                C2D_DrawImageAt(toplogo, -4*slider, 0, 0);
+                drawText(20-(4*slider), 190, 0, 0.5, ctx.clrWhite, 0, "Slider: %f", slider);
+                drawText(20-(4*slider), 210, 0, 0.5, ctx.clrWhite, 0, "Server address: %s", address);
+                if(setpaircodeviaserial) {
+                    drawText(20-(4*slider), 190, 0, 0.5, ctx.clrWhite, 0, "Username set to match serial");
+                }
+
                 C2D_SceneBegin(ctx.bottom);
                 drawTextCenter(SCREEN_WIDTH_BOTTOM/2, 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Press \uE000 to begin!");
                 drawText(SCREEN_WIDTH_BOTTOM/2, 210, 0, 0.4, ctx.clrWhite, C2D_AlignCenter, "Press START to return to the \uE073 HOME Menu.");
                 C2D_DrawSprite(&infoicon);
                 break;
             case 1:
-                C2D_DrawSprite(&topbg);
-                if(strlen(pairingcode)==0) {
-                    drawTextCenter(SCREEN_WIDTH_TOP/2, 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Please enter the pairing code\nsent within the Discord server.");
+                C2D_SceneBegin(ctx.left);
+                C2D_DrawImageAt(topbg, -4*slider, 0, 0);
+                C2D_DrawImageAt(topdots, 0, 0, 0);
+                if(strlen(paircode)==0) {
+                    drawTextCenter(SCREEN_WIDTH_TOP/2 + (4*slider), 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Please enter the Pair Code\nsent within the Discord server.");
+                }
+
+                C2D_SceneBegin(ctx.right);
+                C2D_DrawImageAt(topbg, 4*slider, 0, 0);
+                C2D_DrawImageAt(topdots, 0, 0, 0);
+                if(strlen(paircode)==0) {
+                    drawTextCenter(SCREEN_WIDTH_TOP/2 - (4*slider), 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Please enter the Pair Code\nsent within the Discord server.");
                 }
                 break;
             case 2:
             case 3:
-                C2D_DrawSprite(&topbg);
-                drawTextCenter(SCREEN_WIDTH_TOP/2, 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Submitting...");
+                C2D_SceneBegin(ctx.left);
+                C2D_DrawImageAt(topbg, -4*slider, 0, 0);
+                C2D_DrawImageAt(topdots, 0, 0, 0);
+                drawTextCenter(SCREEN_WIDTH_TOP/2 + (4*slider), 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Submitting...");
+
+                C2D_SceneBegin(ctx.right);
+                C2D_DrawImageAt(topbg, 4*slider, 0, 0);
+                C2D_DrawImageAt(topdots, 0, 0, 0);
+                drawTextCenter(SCREEN_WIDTH_TOP/2 - (4*slider), 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Submitting...");
+
                 C2D_SceneBegin(ctx.bottom);
                 drawTextCenter(SCREEN_WIDTH_BOTTOM/2, 0, 1, ctx.clrWhite, C2D_AlignCenter, getLoadingFrame(frame_counter));
                 break;
@@ -167,19 +193,37 @@ int main(int argc, char** argv) {
                     //drawText(SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT*3/4, 0, 0.5, ctx.clrRed, C2D_AlignCenter, finaltext.c_str());
                     showError(finaltext.c_str());
                     menustate = 0;
-                    pairingcode[0] = '\0';
-                    setpairingcodeviaserial = false;
+                    paircode[0] = '\0';
+                    setpaircodeviaserial = false;
                     continue;
                 } else {
-                    C2D_DrawSprite(&topbg);
-                    drawTextCenter(SCREEN_WIDTH_TOP/2, 0, 0.5, ctx.clrWhite, C2D_AlignCenter, finaltext.c_str());
+                    C2D_SceneBegin(ctx.left);
+                    C2D_DrawImageAt(topbg, -4*slider, 0, 0);
+                    C2D_DrawImageAt(topdots, 0, 0, 0);
+                    drawTextCenter(SCREEN_WIDTH_TOP/2 + (4*slider), 0, 0.5, ctx.clrWhite, C2D_AlignCenter, finaltext.c_str());
+
+                    C2D_SceneBegin(ctx.right);
+                    C2D_DrawImageAt(topbg, 4*slider, 0, 0);
+                    C2D_DrawImageAt(topdots, 0, 0, 0);
+                    drawTextCenter(SCREEN_WIDTH_TOP/2 - (4*slider), 0, 0.5, ctx.clrWhite, C2D_AlignCenter, finaltext.c_str());
+
                     C2D_SceneBegin(ctx.bottom);
                     drawTextCenter(SCREEN_WIDTH_BOTTOM/2, 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Press \uE000 to power off.");
                 }
                 break;
             case 5:
-                C2D_DrawSprite(&topstart);
-                drawText(SCREEN_WIDTH_TOP/2, 200, 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Application Info");
+                C2D_SceneBegin(ctx.left);
+                C2D_DrawImageAt(topbg, -4*slider, 0, 0);
+                C2D_DrawImageAt(topdots, 0, 0, 0);
+                C2D_DrawImageAt(toplogo, 4*slider, 0, 0);
+                drawText(SCREEN_WIDTH_TOP/2 + (4*slider), 200, 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Application Info");
+                
+                C2D_SceneBegin(ctx.right);
+                C2D_DrawImageAt(topbg, 4*slider, 0, 0);
+                C2D_DrawImageAt(topdots, 0, 0, 0);
+                C2D_DrawImageAt(toplogo, -4*slider, 0, 0);
+                drawText(SCREEN_WIDTH_TOP/2 - (4*slider), 200, 0, 0.7, ctx.clrWhite, C2D_AlignCenter, "Application Info");
+
                 C2D_SceneBegin(ctx.bottom);
                 drawTextCenter(SCREEN_WIDTH_BOTTOM/2, 0, 0.4, ctx.clrWhite, C2D_AlignCenter,
                     "Created by the Bluehax team\n"
@@ -192,7 +236,8 @@ int main(int argc, char** argv) {
                     getNANDEssentialSerial(),
                     getSecinfoSerial(),
                     getTWLNSerial()
-                );
+                );\
+                drawText(SCREEN_WIDTH_BOTTOM/2, 210, 0, 0.4, ctx.clrWhite, C2D_AlignCenter, "Press \uE001 to return to the main menu.");
                 break;
 
         }
@@ -220,8 +265,8 @@ int main(int argc, char** argv) {
                     enter(address, 51, SWKBD_TYPE_NORMAL, false);
                 }
                 if ((kDown & KEY_L) && (kDown & KEY_DUP)) {
-                    sprintf(pairingcode, getNANDEssentialSerial());
-                    setpairingcodeviaserial = true;
+                    sprintf(paircode, getNANDEssentialSerial());
+                    setpaircodeviaserial = true;
                 }
                 if (strlen(address) > 0 && (kDown & KEY_A)) {
                     menustate++;
@@ -239,8 +284,8 @@ int main(int argc, char** argv) {
                 }
                 break;
             case 1:
-                if(strlen(pairingcode) == 0) {
-                    enter(pairingcode, 4, SWKBD_TYPE_NUMPAD, true);
+                if(strlen(paircode) == 0) {
+                    enter(paircode, 4, SWKBD_TYPE_NUMPAD, true);
                 } else {
                     menustate++;
                 }
@@ -256,7 +301,7 @@ int main(int argc, char** argv) {
                 }
                 initcurl();
                 initform(); 
-                pairingcodeentry(pairingcode);
+                paircodeentry(paircode);
                 if (usenandessential) {
                     essentialdataentry();
                 } else {

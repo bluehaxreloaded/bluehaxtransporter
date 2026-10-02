@@ -1,6 +1,6 @@
 --atlas -f rgba8888 -z auto
-rbhlogo.png
-topstart.png
 topbg.png
+topdots.png
+toplogo.png
 bottombg.png
 info.png

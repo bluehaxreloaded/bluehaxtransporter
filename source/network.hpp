@@ -4,7 +4,7 @@
 bool initSocket();
 void initcurl();
 void initform();
-void pairingcodeentry(const char* handle);
+void paircodeentry(const char* handle);
 void essentialdataentry();
 void fileentry(const char* filepath);
 void serialentry(const char* name, char* serial);

@@ -6,8 +6,9 @@
 #define SCREEN_HEIGHT 240
 
 typedef struct {
-    C3D_RenderTarget* top;
     C3D_RenderTarget* bottom;
+    C3D_RenderTarget* left;
+    C3D_RenderTarget* right;
     u32 clrBlack;
     u32 clrWhite;
     u32 clrRed;

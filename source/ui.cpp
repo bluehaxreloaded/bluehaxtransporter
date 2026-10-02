@@ -2,6 +2,7 @@
 #include <stdarg.h>
 
 int initUI() {
+    gfxSet3D(true);
     if (!C3D_Init(C3D_DEFAULT_CMDBUF_SIZE)) {
         return -1;
     }
@@ -19,7 +20,8 @@ void exitUI() {
 
 void initContext(DrawContext* ctx)
 {
-    ctx->top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
+    ctx->left = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
+    ctx->right = C2D_CreateScreenTarget(GFX_TOP, GFX_RIGHT);
     ctx->bottom = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
 }
 
